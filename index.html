@@ -1,0 +1,377 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="initial-scale=1,user-scalable=no,maximum-scale=1,width=device-width">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <link rel="stylesheet" href="css/leaflet.css">
+    <link rel="stylesheet" href="css/qgis2web.css">
+    <link rel="stylesheet" href="css/fontawesome-all.min.css">
+    <!-- GEOINFOTECH: Custom styles for enhanced features -->
+    <link rel="stylesheet" href="css/geoinfotech-custom.css">
+    <title>Asokoro District Navigational Map</title>
+    <style>
+    html, body, #map { width: 100%; height: 100%; padding: 0; margin: 0; }
+    </style>
+</head>
+<body>
+    <div id="map"></div>
+    
+    <!-- GEOINFOTECH UI ELEMENTS - Copy these to new mapbooks -->
+    <div id="search-container">
+        <input type="text" id="search-input" placeholder="Search roads, places, POIs...">
+        <div id="search-results"></div>
+    </div>
+    <div id="poi-filter-container">
+        <div id="poi-filter-header">Filter POIs</div>
+        <div id="poi-filter-options"></div>
+    </div>
+    <div id="basemap-selector">
+        <button id="basemap-street" class="basemap-btn active">Street</button>
+        <button id="basemap-satellite" class="basemap-btn">Satellite</button>
+    </div>
+    
+    <!-- Core scripts -->
+    <script src="js/qgis2web_expressions.js"></script>
+    <script src="js/leaflet.js"></script>
+    <script src="js/multi-style-layer.js"></script>
+    <script src="js/leaflet.rotatedMarker.js"></script>
+    <script src="js/leaflet.pattern.js"></script>
+    <script src="js/leaflet-hash.js"></script>
+    <script src="js/Autolinker.min.js"></script>
+    <script src="js/rbush.min.js"></script>
+    <script src="js/labelgun.min.js"></script>
+    <script src="js/labels.js"></script>
+    
+    <!-- Data files -->
+    <script src="data/Asokoro_district_frasokoro_district_0.js"></script>
+    <script src="data/waterinasokoro_1.js"></script>
+    <script src="data/wetlandinasokoro_2.js"></script>
+    <script src="data/scrubinasokoro_3.js"></script>
+    <script src="data/residentialinasokoro_4.js"></script>
+    <script src="data/industrialinasokoro_5.js"></script>
+    <script src="data/constructioninasokoro_6.js"></script>
+    <script src="data/commercialinasokoro_7.js"></script>
+    <script src="data/brownfieldinasokoro_8.js"></script>
+    <script src="data/forestinasokoro_9.js"></script>
+    <script src="data/farmlandinasokoro_10.js"></script>
+    <script src="data/grassinasokoro_11.js"></script>
+    <script src="data/Buildings_12.js"></script>
+    <script src="data/Rivers_13.js"></script>
+    <script src="data/roadsss_14.js"></script>
+    <script src="data/output_15.js"></script>
+    <script src="data/Primaryroad_16.js"></script>
+    <script src="data/schoolinasokoro_17.js"></script>
+    <script src="data/restaurantinasokoro_18.js"></script>
+    <script src="data/postofficeinasokoro_19.js"></script>
+    <script src="data/policeinasokoro_20.js"></script>
+    <script src="data/Pharmacyinasokoropharmacyinasokoro_21.js"></script>
+    <script src="data/parkinginasokoro_22.js"></script>
+    <script src="data/marketinasokoro_23.js"></script>
+    <script src="data/Hotelinasokoro_24.js"></script>
+    <script src="data/POWinasokoro_25.js"></script>
+    <script src="data/hospitalinasokoro_26.js"></script>
+    <script src="data/Fillingstationsinasokorofillingstationsinasokoro_27.js"></script>
+    <script src="data/Banksinasokoro_28.js"></script>
+    <script src="data/Asokoro_district_frasokoro_districtcopy_29.js"></script>
+    
+    <!-- GEOINFOTECH: Enhanced functions -->
+    <script src="js/geoinfotech-functions.js"></script>
+    
+    <script>
+    /* ================================================================
+     * GEOINFOTECH MAPBOOK CONFIGURATION
+     * UPDATE THESE VALUES FOR EACH NEW MAPBOOK
+     * ================================================================ */
+    var MAPBOOK_CONFIG = {
+        title: "Asokoro District Navigational Map",
+        initialBounds: [[9.036049723340502, 7.507813361727314], [9.05580619874058, 7.536172859065539]],
+        attribution: 'Geoinfotech Resources Limited',
+        poiCategories: {
+            'Schools': 'layer_schoolinasokoro_17',
+            'Hospitals': 'layer_hospitalinasokoro_26',
+            'Pharmacies': 'layer_Pharmacyinasokoropharmacyinasokoro_21',
+            'Police Stations': 'layer_policeinasokoro_20',
+            'Fuel Stations': 'layer_Fillingstationsinasokorofillingstationsinasokoro_27',
+            'Banks': 'layer_Banksinasokoro_28',
+            'Hotels': 'layer_Hotelinasokoro_24',
+            'Restaurants': 'layer_restaurantinasokoro_18',
+            'Markets': 'layer_marketinasokoro_23',
+            'Post Offices': 'layer_postofficeinasokoro_19',
+            'Parking': 'layer_parkinginasokoro_22',
+            'Places of Worship': 'layer_POWinasokoro_25'
+        },
+        searchableLayers: {
+            'layer_roadsss_14': ['name', 'alt_name', 'loc_name'],
+            'layer_output_15': ['name'],
+            'layer_Primaryroad_16': ['name', 'ref', 'loc_name'],
+            'layer_schoolinasokoro_17': ['name', 'official_name'],
+            'layer_hospitalinasokoro_26': ['name', 'official_name'],
+            'layer_Banksinasokoro_28': ['name', 'branch', 'brand'],
+            'layer_Fillingstationsinasokorofillingstationsinasokoro_27': ['name', 'brand'],
+            'layer_Hotelinasokoro_24': ['name'],
+            'layer_marketinasokoro_23': ['name'],
+            'layer_policeinasokoro_20': ['name'],
+            'layer_Buildings_12': ['name', 'office', 'amenity']
+        },
+        gridLayer: null
+    };
+
+    /* ================================================================
+     * BASEMAP DEFINITIONS
+     * ================================================================ */
+    var basemapStreet = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: 'OpenStreetMap', maxZoom: 19
+    });
+    var basemapSatellite = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+        attribution: 'Esri', maxZoom: 19
+    });
+
+    /* ================================================================
+     * MAP INITIALIZATION
+     * ================================================================ */
+    var map = L.map('map', { zoomControl: true, maxZoom: 28, minZoom: 1 }).fitBounds(MAPBOOK_CONFIG.initialBounds);
+    basemapStreet.addTo(map);
+    var currentBasemap = basemapStreet;
+    var hash = new L.Hash(map);
+    map.attributionControl.setPrefix(MAPBOOK_CONFIG.attribution);
+    var autolinker = new Autolinker({truncate: {length: 30, location: 'smart'}});
+    var layerRegistry = {};
+
+    /* ================================================================
+     * LAYER DEFINITIONS - Keep your qgis2web generated layers here
+     * Add: layerRegistry['layer_name'] = layer_name; after each layer
+     * ================================================================ */
+    
+    // District boundary
+    map.createPane('pane_district_0'); map.getPane('pane_district_0').style.zIndex = 400;
+    var layer_Asokoro_district_frasokoro_district_0 = new L.geoJson(json_Asokoro_district_frasokoro_district_0, {
+        pane: 'pane_district_0',
+        onEachFeature: function(f,l){ l.bindPopup('<b>'+(f.properties.name||'District')+'</b>'); },
+        style: { opacity:1, color:'rgba(35,35,35,1)', dashArray:'15,3', weight:3, fill:true, fillOpacity:1, fillColor:'rgba(245,245,245,1)' }
+    });
+    map.addLayer(layer_Asokoro_district_frasokoro_district_0);
+    layerRegistry['layer_Asokoro_district_frasokoro_district_0'] = layer_Asokoro_district_frasokoro_district_0;
+
+    // Water
+    map.createPane('pane_water_1'); map.getPane('pane_water_1').style.zIndex = 401;
+    var layer_waterinasokoro_1 = new L.geoJson(json_waterinasokoro_1, { pane:'pane_water_1', style:{stroke:false,fill:true,fillOpacity:1,fillColor:'rgba(98,159,200,1)'} });
+    map.addLayer(layer_waterinasokoro_1); layerRegistry['layer_waterinasokoro_1'] = layer_waterinasokoro_1;
+
+    // Wetland
+    map.createPane('pane_wetland_2'); map.getPane('pane_wetland_2').style.zIndex = 402;
+    var layer_wetlandinasokoro_2 = new L.geoJson(json_wetlandinasokoro_2, { pane:'pane_wetland_2', style:{stroke:false,fill:true,fillOpacity:1,fillColor:'rgba(98,159,200,1)'} });
+    map.addLayer(layer_wetlandinasokoro_2); layerRegistry['layer_wetlandinasokoro_2'] = layer_wetlandinasokoro_2;
+
+    // Scrub
+    map.createPane('pane_scrub_3'); map.getPane('pane_scrub_3').style.zIndex = 403;
+    var layer_scrubinasokoro_3 = new L.geoJson(json_scrubinasokoro_3, { pane:'pane_scrub_3', style:{stroke:false,fill:true,fillOpacity:0.8,fillColor:'rgba(190,213,98,0.8)'} });
+    map.addLayer(layer_scrubinasokoro_3); layerRegistry['layer_scrubinasokoro_3'] = layer_scrubinasokoro_3;
+
+    // Residential
+    map.createPane('pane_residential_4'); map.getPane('pane_residential_4').style.zIndex = 404;
+    var layer_residentialinasokoro_4 = new L.geoJson(json_residentialinasokoro_4, { pane:'pane_residential_4', style:{stroke:false,fill:true,fillOpacity:1,fillColor:'rgba(217,207,197,1)'} });
+    map.addLayer(layer_residentialinasokoro_4); layerRegistry['layer_residentialinasokoro_4'] = layer_residentialinasokoro_4;
+
+    // Industrial
+    map.createPane('pane_industrial_5'); map.getPane('pane_industrial_5').style.zIndex = 405;
+    var layer_industrialinasokoro_5 = new L.geoJson(json_industrialinasokoro_5, { pane:'pane_industrial_5', style:{stroke:false,fill:true,fillOpacity:1,fillColor:'rgba(255,183,3,1)'} });
+    map.addLayer(layer_industrialinasokoro_5); layerRegistry['layer_industrialinasokoro_5'] = layer_industrialinasokoro_5;
+
+    // Construction
+    map.createPane('pane_construction_6'); map.getPane('pane_construction_6').style.zIndex = 406;
+    var layer_constructioninasokoro_6 = new L.geoJson(json_constructioninasokoro_6, { pane:'pane_construction_6', style:{stroke:false,fill:true,fillOpacity:1,fillColor:'rgba(185,75,29,1)'} });
+    map.addLayer(layer_constructioninasokoro_6); layerRegistry['layer_constructioninasokoro_6'] = layer_constructioninasokoro_6;
+
+    // Commercial
+    map.createPane('pane_commercial_7'); map.getPane('pane_commercial_7').style.zIndex = 407;
+    var layer_commercialinasokoro_7 = new L.geoJson(json_commercialinasokoro_7, { pane:'pane_commercial_7', style:{stroke:false,fill:true,fillOpacity:1,fillColor:'rgba(224,122,95,1)'} });
+    map.addLayer(layer_commercialinasokoro_7); layerRegistry['layer_commercialinasokoro_7'] = layer_commercialinasokoro_7;
+
+    // Brownfield
+    map.createPane('pane_brownfield_8'); map.getPane('pane_brownfield_8').style.zIndex = 408;
+    var layer_brownfieldinasokoro_8 = new L.geoJson(json_brownfieldinasokoro_8, { pane:'pane_brownfield_8', style:{stroke:false,fill:true,fillOpacity:1,fillColor:'rgba(221,192,153,1)'} });
+    map.addLayer(layer_brownfieldinasokoro_8); layerRegistry['layer_brownfieldinasokoro_8'] = layer_brownfieldinasokoro_8;
+
+    // Forest
+    map.createPane('pane_forest_9'); map.getPane('pane_forest_9').style.zIndex = 409;
+    var layer_forestinasokoro_9 = new L.geoJson(json_forestinasokoro_9, { pane:'pane_forest_9', style:{stroke:false,fill:true,fillOpacity:1,fillColor:'rgba(155,185,137,1)'} });
+    map.addLayer(layer_forestinasokoro_9); layerRegistry['layer_forestinasokoro_9'] = layer_forestinasokoro_9;
+
+    // Farmland
+    map.createPane('pane_farmland_10'); map.getPane('pane_farmland_10').style.zIndex = 410;
+    var layer_farmlandinasokoro_10 = new L.geoJson(json_farmlandinasokoro_10, { pane:'pane_farmland_10', style:{stroke:false,fill:true,fillOpacity:1,fillColor:'rgba(169,208,138,1)'} });
+    map.addLayer(layer_farmlandinasokoro_10); layerRegistry['layer_farmlandinasokoro_10'] = layer_farmlandinasokoro_10;
+
+    // Grass
+    map.createPane('pane_grass_11'); map.getPane('pane_grass_11').style.zIndex = 411;
+    var layer_grassinasokoro_11 = new L.geoJson(json_grassinasokoro_11, { pane:'pane_grass_11', style:{stroke:false,fill:true,fillOpacity:1,fillColor:'rgba(169,208,138,1)'} });
+    map.addLayer(layer_grassinasokoro_11); layerRegistry['layer_grassinasokoro_11'] = layer_grassinasokoro_11;
+
+    // Buildings
+    map.createPane('pane_buildings_12'); map.getPane('pane_buildings_12').style.zIndex = 412;
+    var layer_Buildings_12 = new L.geoJson(json_Buildings_12, {
+        pane:'pane_buildings_12',
+        onEachFeature: function(f,l){ l.bindPopup('<b>'+(f.properties.name||f.properties.amenity||f.properties.office||'Building')+'</b>'); },
+        style:{opacity:1,color:'rgba(172,172,172,1)',weight:1,fill:true,fillOpacity:1,fillColor:'rgba(223,223,223,1)'}
+    });
+    map.addLayer(layer_Buildings_12); layerRegistry['layer_Buildings_12'] = layer_Buildings_12;
+
+    // Rivers
+    map.createPane('pane_rivers_13'); map.getPane('pane_rivers_13').style.zIndex = 413;
+    var layer_Rivers_13 = new L.geoJson(json_Rivers_13, { pane:'pane_rivers_13', style:{opacity:1,color:'rgba(98,159,200,1)',weight:3,fillOpacity:0} });
+    map.addLayer(layer_Rivers_13); layerRegistry['layer_Rivers_13'] = layer_Rivers_13;
+
+    // Secondary Roads
+    map.createPane('pane_roads_14'); map.getPane('pane_roads_14').style.zIndex = 414;
+    var layer_roadsss_14 = new L.geoJson.multiStyle(json_roadsss_14, {
+        pane:'pane_roads_14',
+        onEachFeature: function(f,l){ l.bindPopup('<b>'+(f.properties.name||'Road')+'</b><br>Type: '+(f.properties.highway||'')); },
+        styles:[{opacity:1,color:'rgba(0,0,0,1)',lineCap:'round',lineJoin:'round',weight:7},{opacity:1,color:'rgba(255,255,255,1)',lineCap:'round',lineJoin:'round',weight:4}]
+    });
+    map.addLayer(layer_roadsss_14); layerRegistry['layer_roadsss_14'] = layer_roadsss_14;
+
+    // Tertiary Roads
+    map.createPane('pane_output_15'); map.getPane('pane_output_15').style.zIndex = 415;
+    var layer_output_15 = new L.geoJson.multiStyle(json_output_15, {
+        pane:'pane_output_15',
+        onEachFeature: function(f,l){ l.bindPopup('<b>'+(f.properties.name||'Road')+'</b>'); },
+        styles:[{opacity:1,color:'rgba(180,139,44,1)',lineCap:'round',lineJoin:'round',weight:8},{opacity:1,color:'rgba(225,189,104,1)',lineCap:'round',lineJoin:'round',weight:3}]
+    });
+    map.addLayer(layer_output_15); layerRegistry['layer_output_15'] = layer_output_15;
+
+    // Primary Roads
+    map.createPane('pane_primary_16'); map.getPane('pane_primary_16').style.zIndex = 416;
+    var layer_Primaryroad_16 = new L.geoJson.multiStyle(json_Primaryroad_16, {
+        pane:'pane_primary_16',
+        onEachFeature: function(f,l){ l.bindPopup('<b>'+(f.properties.name||'Primary Road')+'</b>'+(f.properties.ref?'<br>Ref: '+f.properties.ref:'')); },
+        styles:[{opacity:1,color:'rgba(127,8,0,1)',lineCap:'butt',lineJoin:'round',weight:9},{opacity:1,color:'rgba(225,59,41,1)',lineCap:'butt',lineJoin:'round',weight:5}]
+    });
+    map.addLayer(layer_Primaryroad_16); layerRegistry['layer_Primaryroad_16'] = layer_Primaryroad_16;
+
+    // Schools
+    map.createPane('pane_school_17'); map.getPane('pane_school_17').style.zIndex = 417;
+    var layer_schoolinasokoro_17 = new L.geoJson(json_schoolinasokoro_17, {
+        pane:'pane_school_17',
+        onEachFeature: function(f,l){ l.bindPopup('<b>'+(f.properties.name||'School')+'</b><br>Type: School'); },
+        pointToLayer: function(f,ll){ return L.marker(ll,{icon:L.icon({iconUrl:'markers/schoolinasokoro_17.svg',iconSize:[17.48,17.48]})}); }
+    });
+    map.addLayer(layer_schoolinasokoro_17); layerRegistry['layer_schoolinasokoro_17'] = layer_schoolinasokoro_17;
+
+    // Restaurants
+    map.createPane('pane_restaurant_18'); map.getPane('pane_restaurant_18').style.zIndex = 418;
+    var layer_restaurantinasokoro_18 = new L.geoJson(json_restaurantinasokoro_18, {
+        pane:'pane_restaurant_18',
+        onEachFeature: function(f,l){ l.bindPopup('<b>'+(f.properties.name||'Restaurant')+'</b>'); },
+        pointToLayer: function(f,ll){ return L.marker(ll,{icon:L.icon({iconUrl:'markers/restaurantinasokoro_18.svg',iconSize:[12.92,12.92]})}); }
+    });
+    map.addLayer(layer_restaurantinasokoro_18); layerRegistry['layer_restaurantinasokoro_18'] = layer_restaurantinasokoro_18;
+
+    // Post Office
+    map.createPane('pane_postoffice_19'); map.getPane('pane_postoffice_19').style.zIndex = 419;
+    var layer_postofficeinasokoro_19 = new L.geoJson(json_postofficeinasokoro_19, {
+        pane:'pane_postoffice_19',
+        onEachFeature: function(f,l){ l.bindPopup('<b>'+(f.properties.name||'Post Office')+'</b>'); },
+        pointToLayer: function(f,ll){ return L.marker(ll,{icon:L.icon({iconUrl:'markers/postofficeinasokoro_19.svg',iconSize:[12.16,12.16]})}); }
+    });
+    map.addLayer(layer_postofficeinasokoro_19); layerRegistry['layer_postofficeinasokoro_19'] = layer_postofficeinasokoro_19;
+
+    // Police
+    map.createPane('pane_police_20'); map.getPane('pane_police_20').style.zIndex = 420;
+    var layer_policeinasokoro_20 = new L.geoJson(json_policeinasokoro_20, {
+        pane:'pane_police_20',
+        onEachFeature: function(f,l){ l.bindPopup('<b>'+(f.properties.name||'Police Station')+'</b>'); },
+        pointToLayer: function(f,ll){ return L.marker(ll,{icon:L.icon({iconUrl:'markers/policeinasokoro_20.svg',iconSize:[17.48,17.48]})}); }
+    });
+    map.addLayer(layer_policeinasokoro_20); layerRegistry['layer_policeinasokoro_20'] = layer_policeinasokoro_20;
+
+    // Pharmacy
+    map.createPane('pane_pharmacy_21'); map.getPane('pane_pharmacy_21').style.zIndex = 421;
+    var layer_Pharmacyinasokoropharmacyinasokoro_21 = new L.geoJson(json_Pharmacyinasokoropharmacyinasokoro_21, {
+        pane:'pane_pharmacy_21',
+        onEachFeature: function(f,l){ l.bindPopup('<b>'+(f.properties.name||'Pharmacy')+'</b>'); },
+        pointToLayer: function(f,ll){ return L.marker(ll,{icon:L.icon({iconUrl:'markers/Pharmacyinasokoropharmacyinasokoro_21.svg',iconSize:[18.24,18.24]})}); }
+    });
+    map.addLayer(layer_Pharmacyinasokoropharmacyinasokoro_21); layerRegistry['layer_Pharmacyinasokoropharmacyinasokoro_21'] = layer_Pharmacyinasokoropharmacyinasokoro_21;
+
+    // Parking
+    map.createPane('pane_parking_22'); map.getPane('pane_parking_22').style.zIndex = 422;
+    var layer_parkinginasokoro_22 = new L.geoJson(json_parkinginasokoro_22, {
+        pane:'pane_parking_22',
+        onEachFeature: function(f,l){ l.bindPopup('<b>'+(f.properties.name||'Parking')+'</b>'); },
+        pointToLayer: function(f,ll){ return L.marker(ll,{icon:L.icon({iconUrl:'markers/parkinginasokoro_22.svg',iconSize:[14.44,14.44]})}); }
+    });
+    map.addLayer(layer_parkinginasokoro_22); layerRegistry['layer_parkinginasokoro_22'] = layer_parkinginasokoro_22;
+
+    // Markets
+    map.createPane('pane_market_23'); map.getPane('pane_market_23').style.zIndex = 423;
+    var layer_marketinasokoro_23 = new L.geoJson(json_marketinasokoro_23, {
+        pane:'pane_market_23',
+        onEachFeature: function(f,l){ l.bindPopup('<b>'+(f.properties.name||'Market')+'</b>'); },
+        pointToLayer: function(f,ll){ return L.marker(ll,{icon:L.icon({iconUrl:'markers/marketinasokoro_23.svg',iconSize:[23.56,23.56]})}); }
+    });
+    map.addLayer(layer_marketinasokoro_23); layerRegistry['layer_marketinasokoro_23'] = layer_marketinasokoro_23;
+
+    // Hotels
+    map.createPane('pane_hotel_24'); map.getPane('pane_hotel_24').style.zIndex = 424;
+    var layer_Hotelinasokoro_24 = new L.geoJson(json_Hotelinasokoro_24, {
+        pane:'pane_hotel_24',
+        onEachFeature: function(f,l){ l.bindPopup('<b>'+(f.properties.name||'Hotel')+'</b>'); },
+        pointToLayer: function(f,ll){ return L.marker(ll,{icon:L.icon({iconUrl:'markers/Hotelinasokoro_24.svg',iconSize:[25.08,25.08]})}); }
+    });
+    map.addLayer(layer_Hotelinasokoro_24); layerRegistry['layer_Hotelinasokoro_24'] = layer_Hotelinasokoro_24;
+
+    // Places of Worship
+    map.createPane('pane_pow_25'); map.getPane('pane_pow_25').style.zIndex = 425;
+    var layer_POWinasokoro_25 = new L.geoJson(json_POWinasokoro_25, {
+        pane:'pane_pow_25',
+        onEachFeature: function(f,l){ l.bindPopup('<b>'+(f.properties.name||'Place of Worship')+'</b>'); },
+        pointToLayer: function(f,ll){ return L.marker(ll,{icon:L.icon({iconUrl:'markers/POWinasokoro_25.svg',iconSize:[11.4,11.4]})}); }
+    });
+    map.addLayer(layer_POWinasokoro_25); layerRegistry['layer_POWinasokoro_25'] = layer_POWinasokoro_25;
+
+    // Hospitals
+    map.createPane('pane_hospital_26'); map.getPane('pane_hospital_26').style.zIndex = 426;
+    var layer_hospitalinasokoro_26 = new L.geoJson(json_hospitalinasokoro_26, {
+        pane:'pane_hospital_26',
+        onEachFeature: function(f,l){ l.bindPopup('<b>'+(f.properties.name||'Hospital')+'</b>'); },
+        pointToLayer: function(f,ll){ return L.marker(ll,{icon:L.icon({iconUrl:'markers/hospitalinasokoro_26.svg',iconSize:[21.28,21.28]})}); }
+    });
+    map.addLayer(layer_hospitalinasokoro_26); layerRegistry['layer_hospitalinasokoro_26'] = layer_hospitalinasokoro_26;
+
+    // Fuel Stations
+    map.createPane('pane_fuel_27'); map.getPane('pane_fuel_27').style.zIndex = 427;
+    var layer_Fillingstationsinasokorofillingstationsinasokoro_27 = new L.geoJson(json_Fillingstationsinasokorofillingstationsinasokoro_27, {
+        pane:'pane_fuel_27',
+        onEachFeature: function(f,l){ l.bindPopup('<b>'+(f.properties.name||f.properties.brand||'Fuel Station')+'</b>'); },
+        pointToLayer: function(f,ll){ return L.marker(ll,{icon:L.icon({iconUrl:'markers/Fillingstationsinasokorofillingstationsinasokoro_27.svg',iconSize:[15.96,15.96]})}); }
+    });
+    map.addLayer(layer_Fillingstationsinasokorofillingstationsinasokoro_27); layerRegistry['layer_Fillingstationsinasokorofillingstationsinasokoro_27'] = layer_Fillingstationsinasokorofillingstationsinasokoro_27;
+
+    // Banks
+    map.createPane('pane_bank_28'); map.getPane('pane_bank_28').style.zIndex = 428;
+    var layer_Banksinasokoro_28 = new L.geoJson(json_Banksinasokoro_28, {
+        pane:'pane_bank_28',
+        onEachFeature: function(f,l){ l.bindPopup('<b>'+(f.properties.name||'Bank')+'</b>'+(f.properties.branch?'<br>Branch: '+f.properties.branch:'')); },
+        pointToLayer: function(f,ll){ return L.marker(ll,{icon:L.icon({iconUrl:'markers/Banksinasokoro_28.svg',iconSize:[12.16,12.16]})}); }
+    });
+    map.addLayer(layer_Banksinasokoro_28); layerRegistry['layer_Banksinasokoro_28'] = layer_Banksinasokoro_28;
+
+    // District Label
+    map.createPane('pane_districtcopy_29'); map.getPane('pane_districtcopy_29').style.zIndex = 429;
+    var layer_Asokoro_district_frasokoro_districtcopy_29 = new L.geoJson(json_Asokoro_district_frasokoro_districtcopy_29, {
+        pane:'pane_districtcopy_29',
+        style:{opacity:1,color:'rgba(35,35,35,1)',dashArray:'55,11',weight:11,fill:true,fillOpacity:0,fillColor:'rgba(255,158,23,0)'}
+    });
+    map.addLayer(layer_Asokoro_district_frasokoro_districtcopy_29); layerRegistry['layer_Asokoro_district_frasokoro_districtcopy_29'] = layer_Asokoro_district_frasokoro_districtcopy_29;
+
+    /* ================================================================
+     * INITIALIZE GEOINFOTECH ENHANCED FEATURES
+     * This must be called AFTER all layers are defined
+     * ================================================================ */
+    initGeoinfotech(map, layerRegistry, MAPBOOK_CONFIG, basemapStreet, basemapSatellite, currentBasemap);
+    </script>
+</body>
+</html>

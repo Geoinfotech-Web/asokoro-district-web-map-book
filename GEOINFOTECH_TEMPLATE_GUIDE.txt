@@ -1,0 +1,409 @@
+================================================================================
+GEOINFOTECH RESOURCES LIMITED
+QGIS2WEB ENHANCED MAPBOOK TEMPLATE
+================================================================================
+
+DOCUMENT OVERVIEW
+-----------------
+This document provides step-by-step instructions for enhancing qgis2web exports
+with the following features as specified in the Web Mapping Application document:
+
+- 4.2 Basemap Selection (Street / Satellite toggle)
+- 4.6 Search Capability (case-insensitive, character-insensitive)
+- 4.7 POI Category Filtering
+- 4.5 Grid-Based Map Sheet Navigation (optional)
+- 5.0 Mobile and Desktop Compatibility
+
+================================================================================
+FILES ADDED/MODIFIED
+================================================================================
+
+NEW FILES TO ADD:
+-----------------
+1. css/geoinfotech-custom.css    - Custom styles for UI controls
+2. js/geoinfotech-functions.js   - JavaScript functions for enhanced features
+
+MODIFIED FILE:
+--------------
+3. index.html                    - Main HTML file (requires specific edits)
+
+
+================================================================================
+STEP-BY-STEP INSTRUCTIONS
+================================================================================
+
+
+================================================================================
+STEP 1: COPY NEW FILES
+================================================================================
+
+After exporting your mapbook from qgis2web, copy these two files to your export:
+
+1. Copy "geoinfotech-custom.css" to the "css/" folder
+2. Copy "geoinfotech-functions.js" to the "js/" folder
+
+
+================================================================================
+STEP 2: EDIT index.html - ADD CSS LINK
+================================================================================
+
+LOCATION: In the <head> section, after the existing CSS links
+
+FIND THIS (or similar):
+------------------------
+<link rel="stylesheet" href="css/fontawesome-all.min.css">
+
+ADD AFTER IT:
+-------------
+<!-- ============================================================== -->
+<!-- GEOINFOTECH CUSTOM STYLES - START -->
+<!-- ============================================================== -->
+<link rel="stylesheet" href="css/geoinfotech-custom.css">
+<!-- ============================================================== -->
+<!-- GEOINFOTECH CUSTOM STYLES - END -->
+<!-- ============================================================== -->
+
+
+================================================================================
+STEP 3: EDIT index.html - ADD HTML UI ELEMENTS
+================================================================================
+
+LOCATION: Right after the <div id="map"></div> element
+
+FIND THIS:
+----------
+<div id="map">
+</div>
+
+ADD AFTER IT:
+-------------
+<!-- ============================================================== -->
+<!-- GEOINFOTECH CUSTOM UI ELEMENTS - START -->
+<!-- ============================================================== -->
+
+<!-- Search Box -->
+<div id="search-container">
+    <input type="text" id="search-input" placeholder="Search roads, places, POIs...">
+    <div id="search-results"></div>
+</div>
+
+<!-- POI Filter Panel -->
+<div id="poi-filter-container">
+    <div id="poi-filter-header">Filter POIs</div>
+    <div id="poi-filter-options"></div>
+</div>
+
+<!-- Basemap Selector -->
+<div id="basemap-selector">
+    <button id="basemap-street" class="basemap-btn active">Street</button>
+    <button id="basemap-satellite" class="basemap-btn">Satellite</button>
+</div>
+
+<!-- ============================================================== -->
+<!-- GEOINFOTECH CUSTOM UI ELEMENTS - END -->
+<!-- ============================================================== -->
+
+
+================================================================================
+STEP 4: EDIT index.html - ADD JAVASCRIPT FILE LINK
+================================================================================
+
+LOCATION: After the labels.js script tag, before the layer data scripts
+
+FIND THIS (or similar):
+-----------------------
+<script src="js/labels.js"></script>
+
+ADD AFTER IT:
+-------------
+<!-- ============================================================== -->
+<!-- GEOINFOTECH ENHANCED FUNCTIONS -->
+<!-- ============================================================== -->
+<script src="js/geoinfotech-functions.js"></script>
+<!-- ============================================================== -->
+
+
+================================================================================
+STEP 5: EDIT index.html - ADD CONFIGURATION OBJECT
+================================================================================
+
+LOCATION: At the very beginning of the <script> tag, before 'var map = L.map...'
+
+ADD THIS BLOCK (and customize for your mapbook):
+------------------------------------------------
+// ================================================================
+// GEOINFOTECH MAPBOOK CONFIGURATION - START
+// UPDATE THESE VALUES FOR EACH NEW MAPBOOK
+// ================================================================
+
+var MAPBOOK_CONFIG = {
+    // Map title (update for your district)
+    title: "YOUR DISTRICT NAME Navigational Map",
+    
+    // Initial map bounds [[south, west], [north, east]]
+    // Copy these from your qgis2web export's fitBounds call
+    initialBounds: [[LAT_SOUTH, LNG_WEST], [LAT_NORTH, LNG_EAST]],
+    
+    // Attribution
+    attribution: 'Geoinfotech Resources Limited',
+    
+    // ============================================================
+    // POI CATEGORIES FOR FILTERING
+    // Format: 'Display Name': 'layer_variable_name'
+    // Update layer names to match your qgis2web export
+    // Find layer names in your export - they look like: var layer_XXXXX
+    // ============================================================
+    poiCategories: {
+        'Schools': 'layer_schoolinYOURDISTRICT_XX',
+        'Hospitals': 'layer_hospitalinYOURDISTRICT_XX',
+        'Pharmacies': 'layer_pharmacyinYOURDISTRICT_XX',
+        'Police Stations': 'layer_policeinYOURDISTRICT_XX',
+        'Fuel Stations': 'layer_fuelstationinYOURDISTRICT_XX',
+        'Banks': 'layer_banksinYOURDISTRICT_XX',
+        'Hotels': 'layer_hotelinYOURDISTRICT_XX',
+        'Restaurants': 'layer_restaurantinYOURDISTRICT_XX',
+        'Markets': 'layer_marketinYOURDISTRICT_XX',
+        'Post Offices': 'layer_postofficeinYOURDISTRICT_XX',
+        'Parking': 'layer_parkinginYOURDISTRICT_XX',
+        'Places of Worship': 'layer_powinYOURDISTRICT_XX'
+    },
+    
+    // ============================================================
+    // SEARCHABLE LAYERS
+    // Format: 'layer_name': ['field1', 'field2', ...]
+    // These fields will be searched when user types in search box
+    // Common fields: name, alt_name, official_name, ref, brand
+    // ============================================================
+    searchableLayers: {
+        'layer_roads_XX': ['name', 'alt_name', 'loc_name'],
+        'layer_primaryroads_XX': ['name', 'ref'],
+        'layer_schoolinYOURDISTRICT_XX': ['name', 'official_name'],
+        'layer_hospitalinYOURDISTRICT_XX': ['name'],
+        'layer_banksinYOURDISTRICT_XX': ['name', 'branch', 'brand'],
+        'layer_buildings_XX': ['name', 'amenity']
+    },
+    
+    // Grid layer for map sheet navigation
+    // Set to null if you don't have a grid layer
+    // If you have one, use its layer name: 'layer_mapsheet_grid_XX'
+    gridLayer: null
+};
+
+// ================================================================
+// GEOINFOTECH MAPBOOK CONFIGURATION - END
+// ================================================================
+
+
+================================================================================
+STEP 6: EDIT index.html - ADD BASEMAP DEFINITIONS
+================================================================================
+
+LOCATION: Right after the MAPBOOK_CONFIG, before 'var map = L.map...'
+
+ADD THIS:
+---------
+// ================================================================
+// BASEMAP DEFINITIONS
+// ================================================================
+var basemapStreet = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: 'OpenStreetMap',
+    maxZoom: 19
+});
+
+var basemapSatellite = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+    attribution: 'Esri',
+    maxZoom: 19
+});
+
+
+================================================================================
+STEP 7: EDIT index.html - ADD LAYER REGISTRY
+================================================================================
+
+LOCATION: Right after 'var map = L.map...' initialization, before layer definitions
+
+ADD THIS:
+---------
+// ================================================================
+// LAYER REGISTRY - Stores all layers for search/filter
+// ================================================================
+var layerRegistry = {};
+
+
+================================================================================
+STEP 8: EDIT index.html - REGISTER EACH LAYER
+================================================================================
+
+For EACH layer in your qgis2web export, add a registration line AFTER the
+map.addLayer() call.
+
+EXAMPLE - FIND THIS PATTERN:
+----------------------------
+var layer_schoolinasokoro_17 = new L.geoJson(json_schoolinasokoro_17, {
+    // ... layer options ...
+});
+bounds_group.addLayer(layer_schoolinasokoro_17);
+map.addLayer(layer_schoolinasokoro_17);
+
+ADD AFTER map.addLayer():
+-------------------------
+// GEOINFOTECH: Register layer for search/filter
+layerRegistry['layer_schoolinasokoro_17'] = layer_schoolinasokoro_17;
+
+REPEAT THIS FOR EVERY LAYER YOU WANT TO BE SEARCHABLE OR FILTERABLE!
+
+
+================================================================================
+STEP 9: EDIT index.html - ADD INITIALIZATION CALL
+================================================================================
+
+LOCATION: At the very END of the <script> tag, after all layer definitions
+
+ADD THIS:
+---------
+// ================================================================
+// GEOINFOTECH: INITIALIZE ALL ENHANCED FEATURES
+// This MUST be called AFTER all layers are defined and registered
+// ================================================================
+
+// Add default basemap
+basemapStreet.addTo(map);
+basemapStreet.bringToBack();
+
+// Initialize all Geoinfotech features
+initializeGeointechFeatures(map, layerRegistry, MAPBOOK_CONFIG, basemapStreet, basemapSatellite);
+
+// ================================================================
+// GEOINFOTECH INITIALIZATION - END
+// ================================================================
+
+
+================================================================================
+COMPLETE EXAMPLE: INDEX.HTML STRUCTURE
+================================================================================
+
+Your final index.html should have this structure:
+
+<!doctype html>
+<html lang="en">
+<head>
+    <!-- Original meta tags -->
+    <!-- Original CSS links -->
+    <!-- GEOINFOTECH: Custom CSS link -->
+    <link rel="stylesheet" href="css/geoinfotech-custom.css">
+</head>
+<body>
+    <div id="map"></div>
+    
+    <!-- GEOINFOTECH: UI Elements (search, filter, basemap) -->
+    <div id="search-container">...</div>
+    <div id="poi-filter-container">...</div>
+    <div id="basemap-selector">...</div>
+    
+    <!-- Original JS files -->
+    <!-- GEOINFOTECH: Functions file -->
+    <script src="js/geoinfotech-functions.js"></script>
+    
+    <!-- Data files -->
+    
+    <script>
+        // GEOINFOTECH: Configuration
+        var MAPBOOK_CONFIG = {...};
+        
+        // GEOINFOTECH: Basemap definitions
+        var basemapStreet = L.tileLayer(...);
+        var basemapSatellite = L.tileLayer(...);
+        
+        // Original map initialization
+        var map = L.map('map', {...});
+        
+        // GEOINFOTECH: Layer registry
+        var layerRegistry = {};
+        
+        // Layer definitions (from qgis2web)
+        // After each: layerRegistry['layer_name'] = layer_name;
+        
+        // GEOINFOTECH: Initialize features
+        basemapStreet.addTo(map);
+        basemapStreet.bringToBack();
+        initializeGeointechFeatures(map, layerRegistry, MAPBOOK_CONFIG, basemapStreet, basemapSatellite);
+    </script>
+</body>
+</html>
+
+
+================================================================================
+TROUBLESHOOTING
+================================================================================
+
+ISSUE: Search not working
+SOLUTION: 
+1. Check that layer names in searchableLayers match exactly with your layers
+2. Check that you registered all layers: layerRegistry['layer_name'] = layer_name;
+3. Check browser console (F12) for errors
+
+ISSUE: POI filter not showing categories
+SOLUTION:
+1. Check that layer names in poiCategories match exactly with your layers
+2. Make sure layers are registered in layerRegistry
+
+ISSUE: Basemap buttons not working
+SOLUTION:
+1. Check that basemapStreet.addTo(map) is called
+2. Check that initializeGeointechFeatures() is called
+
+ISSUE: Features not working on mobile
+SOLUTION:
+1. Make sure geoinfotech-custom.css is loaded
+2. Check viewport meta tag exists in <head>
+
+
+================================================================================
+FINDING LAYER NAMES IN YOUR EXPORT
+================================================================================
+
+To find the correct layer names:
+
+1. Open your qgis2web export's index.html
+2. Search for "var layer_" 
+3. Note the full layer name, e.g., "layer_schoolinyourdistrictname_17"
+4. Use these exact names in MAPBOOK_CONFIG
+
+
+================================================================================
+CUSTOMIZATION OPTIONS
+================================================================================
+
+CHANGING BASEMAP SOURCES:
+Replace the tile URLs in basemap definitions to use different providers.
+
+ADDING MORE POI CATEGORIES:
+Add entries to the poiCategories object in MAPBOOK_CONFIG.
+
+ADDING MORE SEARCHABLE LAYERS:
+Add entries to the searchableLayers object in MAPBOOK_CONFIG.
+
+CUSTOMIZING STYLES:
+Edit css/geoinfotech-custom.css to change colors, sizes, positions.
+
+
+================================================================================
+VERSION HISTORY
+================================================================================
+
+Version 1.0 - January 2026
+- Initial release
+- Basemap selection (Street/Satellite)
+- Search capability with normalization
+- POI category filtering
+- Grid navigation support
+- Mobile responsiveness
+
+================================================================================
+CONTACT
+================================================================================
+
+For questions or issues, contact the GIS team.
+
+Geoinfotech Resources Limited
+================================================================================

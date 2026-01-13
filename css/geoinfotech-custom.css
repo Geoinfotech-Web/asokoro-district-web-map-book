@@ -1,0 +1,271 @@
+/* ================================================================
+ * GEOINFOTECH RESOURCES LIMITED
+ * Custom Styles for Enhanced qgis2web Export
+ * 
+ * This file contains styles for:
+ * - Search box
+ * - POI filter panel  
+ * - Basemap selector
+ * - Mobile responsiveness
+ * 
+ * Copy this file to your new qgis2web export's css folder
+ * ================================================================ */
+
+/* ================================================================
+ * SEARCH BOX STYLES
+ * Position: Top-right corner
+ * ================================================================ */
+#search-container {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    z-index: 1000;
+    width: 280px;
+    font-family: Arial, sans-serif;
+}
+
+#search-input {
+    width: 100%;
+    padding: 10px 15px;
+    font-size: 14px;
+    border: 2px solid #3388ff;
+    border-radius: 4px;
+    outline: none;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+    box-sizing: border-box;
+}
+
+#search-input:focus {
+    border-color: #1a5cb8;
+}
+
+#search-input::placeholder {
+    color: #888;
+}
+
+#search-results {
+    display: none;
+    background: white;
+    border: 1px solid #ddd;
+    border-top: none;
+    border-radius: 0 0 4px 4px;
+    max-height: 300px;
+    overflow-y: auto;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+}
+
+.search-result-item {
+    padding: 10px 15px;
+    cursor: pointer;
+    border-bottom: 1px solid #eee;
+    font-size: 13px;
+}
+
+.search-result-item:hover {
+    background-color: #f0f7ff;
+}
+
+.search-result-item:last-child {
+    border-bottom: none;
+}
+
+/* ================================================================
+ * POI FILTER PANEL STYLES
+ * Position: Top-left, below zoom controls
+ * ================================================================ */
+#poi-filter-container {
+    position: absolute;
+    top: 100px;
+    left: 10px;
+    z-index: 1000;
+    background: white;
+    border-radius: 4px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+    font-family: Arial, sans-serif;
+    max-width: 200px;
+}
+
+#poi-filter-header {
+    padding: 10px 15px;
+    font-weight: bold;
+    font-size: 14px;
+    cursor: pointer;
+    background: #3388ff;
+    color: white;
+    border-radius: 4px 4px 0 0;
+    user-select: none;
+}
+
+#poi-filter-header:hover {
+    background: #1a5cb8;
+}
+
+#poi-filter-options {
+    padding: 10px;
+    max-height: 300px;
+    overflow-y: auto;
+}
+
+.poi-filter-item {
+    padding: 5px 0;
+    display: flex;
+    align-items: center;
+    font-size: 13px;
+}
+
+.poi-filter-item input[type="checkbox"] {
+    margin-right: 8px;
+    cursor: pointer;
+}
+
+.poi-filter-item label {
+    cursor: pointer;
+    user-select: none;
+}
+
+/* ================================================================
+ * BASEMAP SELECTOR STYLES
+ * Position: Bottom-left corner
+ * ================================================================ */
+#basemap-selector {
+    position: absolute;
+    bottom: 25px;
+    left: 10px;
+    z-index: 1000;
+    display: flex;
+    gap: 2px;
+    background: white;
+    border-radius: 4px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+    overflow: hidden;
+}
+
+.basemap-btn {
+    padding: 8px 15px;
+    font-size: 12px;
+    font-family: Arial, sans-serif;
+    border: none;
+    background: white;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.basemap-btn:hover {
+    background: #f0f0f0;
+}
+
+.basemap-btn.active {
+    background: #3388ff;
+    color: white;
+}
+
+/* ================================================================
+ * GRID TOGGLE BUTTON (for map sheet navigation)
+ * Position: Bottom-right corner
+ * ================================================================ */
+.grid-toggle-btn {
+    position: absolute;
+    bottom: 25px;
+    right: 10px;
+    z-index: 1000;
+    padding: 8px 15px;
+    font-size: 12px;
+    font-family: Arial, sans-serif;
+    border: 2px solid #666;
+    border-radius: 4px;
+    background: white;
+    cursor: pointer;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+}
+
+.grid-toggle-btn:hover {
+    background: #f0f0f0;
+}
+
+/* ================================================================
+ * POPUP STYLES (Enhanced)
+ * ================================================================ */
+.leaflet-popup-content-wrapper {
+    border-radius: 4px;
+}
+
+.leaflet-popup-content {
+    margin: 10px 15px;
+    font-family: Arial, sans-serif;
+    font-size: 13px;
+}
+
+.leaflet-popup-content table {
+    border-collapse: collapse;
+    width: 100%;
+}
+
+.leaflet-popup-content th {
+    text-align: left;
+    padding: 4px 8px 4px 0;
+    color: #666;
+    font-weight: normal;
+    width: 30%;
+}
+
+.leaflet-popup-content td {
+    padding: 4px 0;
+}
+
+/* ================================================================
+ * MOBILE RESPONSIVENESS
+ * Adjustments for screens smaller than 768px
+ * ================================================================ */
+@media (max-width: 768px) {
+    #search-container {
+        width: calc(100% - 80px);
+        max-width: 280px;
+    }
+    
+    #poi-filter-container {
+        max-width: 180px;
+    }
+    
+    #poi-filter-options {
+        max-height: 200px;
+    }
+    
+    #basemap-selector {
+        bottom: 60px;
+    }
+    
+    .basemap-btn {
+        padding: 6px 10px;
+        font-size: 11px;
+    }
+}
+
+@media (max-width: 480px) {
+    #search-container {
+        top: 5px;
+        right: 5px;
+        width: calc(100% - 60px);
+    }
+    
+    #search-input {
+        padding: 8px 12px;
+        font-size: 13px;
+    }
+    
+    #poi-filter-container {
+        top: 80px;
+        left: 5px;
+    }
+    
+    #poi-filter-header {
+        padding: 8px 12px;
+        font-size: 13px;
+    }
+}
+
+/* ================================================================
+ * ATTRIBUTION STYLES
+ * ================================================================ */
+.leaflet-control-attribution {
+    font-size: 11px;
+}

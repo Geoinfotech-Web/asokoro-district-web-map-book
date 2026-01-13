@@ -1,0 +1,307 @@
+================================================================================
+GEOINFOTECH RESOURCES LIMITED
+QGIS2WEB ENHANCED EXPORT - IMPLEMENTATION GUIDE
+================================================================================
+
+This document contains all the code additions and modifications made to the
+standard qgis2web export to implement the enhanced navigation mapbook features.
+
+Document Reference: Development_of_a_Public_Web_Mapping_Application_for_the_Navigational_Map_Books.docx
+
+================================================================================
+TABLE OF CONTENTS
+================================================================================
+1. Overview of Features Implemented
+2. Files Added/Modified
+3. Step-by-Step Implementation Guide
+4. Code Snippets to Copy
+5. Configuration for New Mapbooks
+
+================================================================================
+1. OVERVIEW OF FEATURES IMPLEMENTED
+================================================================================
+
+Feature 4.1 - Interactive Map Navigation
+- Pan and zoom functionality (built-in Leaflet)
+- Smooth interaction on desktop and mobile
+
+Feature 4.2 - Basemap Selection
+- Street basemap (OpenStreetMap)
+- Satellite imagery (Esri World Imagery)
+- Toggle buttons at bottom-left corner
+
+Feature 4.3 - Layer Visibility Control
+- All thematic layers can be toggled
+- Centralized in the layer registry
+
+Feature 4.4 - Feature Identification (Click Information)
+- Popups display feature attributes
+- Road name, classification, POI details, coordinates
+
+Feature 4.5 - Grid-Based Map Sheet Navigation (Optional)
+- Hidden by default
+- Click grid cell to zoom to extent
+- Toggle button to show/hide grid
+
+Feature 4.6 - Search Capability
+- Case-insensitive search
+- Character-insensitive (hyphens, underscores, spacing)
+- Searches roads, places, POIs
+- Example: "nyanya karshi" matches "Nyanya-Karshi Road"
+
+Feature 4.7 - POI Category Filtering
+- Checkbox panel for each POI category
+- Toggle visibility of Schools, Hospitals, Banks, etc.
+
+Feature 5 - Mobile/Desktop Compatibility
+- Responsive design
+- Panels collapse on smaller screens
+
+Feature 6 - GitHub Pages Ready
+- All static files
+- No backend required
+
+
+================================================================================
+2. FILES ADDED/MODIFIED
+================================================================================
+
+NEW FILES TO ADD:
+-----------------
+1. css/geoinfotech-custom.css  - Styles for search, filter, basemap selector
+2. js/geoinfotech-functions.js - JavaScript functions for enhanced features
+
+MODIFIED FILES:
+---------------
+1. index.html - Main HTML file with significant additions
+
+
+================================================================================
+3. STEP-BY-STEP IMPLEMENTATION GUIDE
+================================================================================
+
+For each new qgis2web export, follow these steps:
+
+STEP 1: Export from qgis2web as usual
+
+STEP 2: Copy the following files to your export folder:
+   - css/geoinfotech-custom.css
+   - js/geoinfotech-functions.js
+
+STEP 3: Edit index.html
+   - Add CSS link in <head>
+   - Add HTML elements for search, filter, basemap selector
+   - Add JS script reference
+   - Add MAPBOOK_CONFIG object
+   - Add basemap definitions
+   - Add layerRegistry entries after each layer
+   - Call initGeoinfotech() at the end
+
+Detailed instructions for each step are in Section 4 below.
+
+
+================================================================================
+4. CODE SNIPPETS TO COPY
+================================================================================
+
+--------------------------------------------------------------------------------
+4.1 - ADD TO <head> SECTION (after existing CSS links)
+--------------------------------------------------------------------------------
+<!-- GEOINFOTECH: Custom styles for enhanced features -->
+<link rel="stylesheet" href="css/geoinfotech-custom.css">
+
+--------------------------------------------------------------------------------
+4.2 - ADD INSIDE <body> (after <div id="map"></div>)
+--------------------------------------------------------------------------------
+<!-- GEOINFOTECH UI ELEMENTS - Copy these to new mapbooks -->
+<div id="search-container">
+    <input type="text" id="search-input" placeholder="Search roads, places, POIs...">
+    <div id="search-results"></div>
+</div>
+<div id="poi-filter-container">
+    <div id="poi-filter-header">Filter POIs</div>
+    <div id="poi-filter-options"></div>
+</div>
+<div id="basemap-selector">
+    <button id="basemap-street" class="basemap-btn active">Street</button>
+    <button id="basemap-satellite" class="basemap-btn">Satellite</button>
+</div>
+
+--------------------------------------------------------------------------------
+4.3 - ADD BEFORE </body> (after all data script tags)
+--------------------------------------------------------------------------------
+<!-- GEOINFOTECH: Enhanced functions -->
+<script src="js/geoinfotech-functions.js"></script>
+
+--------------------------------------------------------------------------------
+4.4 - ADD AT START OF <script> SECTION (inside the main script block)
+--------------------------------------------------------------------------------
+/* ================================================================
+ * GEOINFOTECH MAPBOOK CONFIGURATION
+ * UPDATE THESE VALUES FOR EACH NEW MAPBOOK
+ * ================================================================ */
+var MAPBOOK_CONFIG = {
+    // Update title for your mapbook
+    title: "Your District Navigational Map",
+    
+    // Update bounds to your study area [[south, west], [north, east]]
+    initialBounds: [[9.036, 7.507], [9.056, 7.536]],
+    
+    // Attribution
+    attribution: 'Geoinfotech Resources Limited',
+    
+    // POI Categories - Update layer names to match your export
+    // Format: 'Display Name': 'layer_variable_name'
+    poiCategories: {
+        'Schools': 'layer_schoolinasokoro_17',
+        'Hospitals': 'layer_hospitalinasokoro_26',
+        'Pharmacies': 'layer_Pharmacyinasokoropharmacyinasokoro_21',
+        'Police Stations': 'layer_policeinasokoro_20',
+        'Fuel Stations': 'layer_Fillingstationsinasokorofillingstationsinasokoro_27',
+        'Banks': 'layer_Banksinasokoro_28',
+        'Hotels': 'layer_Hotelinasokoro_24',
+        'Restaurants': 'layer_restaurantinasokoro_18',
+        'Markets': 'layer_marketinasokoro_23',
+        'Post Offices': 'layer_postofficeinasokoro_19',
+        'Parking': 'layer_parkinginasokoro_22',
+        'Places of Worship': 'layer_POWinasokoro_25'
+    },
+    
+    // Searchable layers - Update layer and field names
+    // Format: 'layer_name': ['field1', 'field2', ...]
+    searchableLayers: {
+        'layer_roadsss_14': ['name', 'alt_name', 'loc_name'],
+        'layer_output_15': ['name'],
+        'layer_Primaryroad_16': ['name', 'ref', 'loc_name'],
+        'layer_schoolinasokoro_17': ['name', 'official_name'],
+        'layer_hospitalinasokoro_26': ['name', 'official_name'],
+        'layer_Banksinasokoro_28': ['name', 'branch', 'brand'],
+        'layer_Buildings_12': ['name', 'office', 'amenity']
+    },
+    
+    // Grid layer for map sheet navigation (set to null if not used)
+    gridLayer: null
+};
+
+--------------------------------------------------------------------------------
+4.5 - ADD AFTER MAPBOOK_CONFIG (basemap definitions)
+--------------------------------------------------------------------------------
+/* ================================================================
+ * BASEMAP DEFINITIONS
+ * ================================================================ */
+var basemapStreet = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: 'OpenStreetMap', maxZoom: 19
+});
+var basemapSatellite = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+    attribution: 'Esri', maxZoom: 19
+});
+
+--------------------------------------------------------------------------------
+4.6 - MODIFY MAP INITIALIZATION
+--------------------------------------------------------------------------------
+// Change this line:
+var map = L.map('map', { ... }).fitBounds([[...], [...]]);
+
+// To this:
+var map = L.map('map', { zoomControl: true, maxZoom: 28, minZoom: 1 }).fitBounds(MAPBOOK_CONFIG.initialBounds);
+
+// Add these lines after map creation:
+basemapStreet.addTo(map);
+var currentBasemap = basemapStreet;
+var layerRegistry = {};
+
+--------------------------------------------------------------------------------
+4.7 - ADD LAYER REGISTRY ENTRY (after EACH layer definition)
+--------------------------------------------------------------------------------
+// After each layer is created, add this line:
+// Example for roads layer:
+var layer_roadsss_14 = new L.geoJson.multiStyle(json_roadsss_14, { ... });
+map.addLayer(layer_roadsss_14);
+layerRegistry['layer_roadsss_14'] = layer_roadsss_14;  // <-- ADD THIS LINE
+
+// Repeat for EVERY layer in your export
+
+--------------------------------------------------------------------------------
+4.8 - ADD AT END OF SCRIPT (after all layers are defined)
+--------------------------------------------------------------------------------
+/* ================================================================
+ * INITIALIZE GEOINFOTECH ENHANCED FEATURES
+ * This must be called AFTER all layers are defined
+ * ================================================================ */
+initGeoinfotech(map, layerRegistry, MAPBOOK_CONFIG, basemapStreet, basemapSatellite, currentBasemap);
+
+
+================================================================================
+5. CONFIGURATION FOR NEW MAPBOOKS
+================================================================================
+
+When creating a new mapbook, update these items in MAPBOOK_CONFIG:
+
+1. TITLE
+   Change: title: "Asokoro District Navigational Map"
+   To:     title: "Your New District Navigational Map"
+
+2. INITIAL BOUNDS
+   Change: initialBounds: [[9.036, 7.507], [9.056, 7.536]]
+   To:     initialBounds: [[your_south, your_west], [your_north, your_east]]
+   
+   Tip: Get bounds from QGIS layer properties or from the qgis2web fitBounds line
+
+3. POI CATEGORIES
+   Update layer names to match your qgis2web export.
+   Find layer names in your exported index.html where layers are created.
+   Example: var layer_schools_17 = new L.geoJson(...)
+   Use 'layer_schools_17' as the value.
+
+4. SEARCHABLE LAYERS
+   Update layer names and field names.
+   Check your GeoJSON data files to see available field names.
+   Add fields that contain searchable text (name, road_name, etc.)
+
+5. GRID LAYER (optional)
+   If you have a map sheet grid layer, set gridLayer to its name.
+   If not using grid navigation, leave as null.
+
+
+================================================================================
+QUICK REFERENCE - LAYER REGISTRY ENTRIES
+================================================================================
+
+Add this line after EACH layer definition in your export:
+
+layerRegistry['layer_NAME'] = layer_NAME;
+
+Examples:
+layerRegistry['layer_district_0'] = layer_district_0;
+layerRegistry['layer_roads_14'] = layer_roads_14;
+layerRegistry['layer_schools_17'] = layer_schools_17;
+layerRegistry['layer_hospitals_26'] = layer_hospitals_26;
+
+
+================================================================================
+TROUBLESHOOTING
+================================================================================
+
+1. Search not working?
+   - Check that layer names in searchableLayers match your actual layer variable names
+   - Check that field names match your GeoJSON properties
+   - Open browser console (F12) for errors
+
+2. POI filter checkboxes not working?
+   - Check that layer names in poiCategories match your layer variable names
+   - Ensure all layers are added to layerRegistry
+
+3. Basemap not switching?
+   - Make sure basemapStreet.addTo(map) is called after map creation
+   - Check that currentBasemap variable is defined
+
+4. Map not loading?
+   - Check browser console for JavaScript errors
+   - Verify all script paths are correct
+   - Ensure data/*.js files are present
+
+
+================================================================================
+END OF DOCUMENT
+================================================================================
+Geoinfotech Resources Limited
